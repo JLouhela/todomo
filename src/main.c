@@ -11,6 +11,7 @@
 /* 04 typedefs */
 /* 05 globals (but don't)*/
 /* 06 ancillary function prototypes if any */
+void print_usage();
 
 int main(int argc, char *argv[])
 {
@@ -20,11 +21,22 @@ int main(int argc, char *argv[])
     /* 08 check argv[0] to see how the program was invoked */
     /* 09 process the command line options from the user */
     int opt;
-    while ((opt = getopt(argc, argv, "h")) != -1)
+    while ((opt = getopt(argc, argv, ":hap:")) != -1)
         switch (opt)
         {
         case 'h':
-            printf("\nHELP\n");
+            print_usage();
+            break;
+        case ':':
+            switch (optopt)
+            {
+            case 'p':
+                printf("option -%c with default argument value\n", optopt);
+                break;
+            default:
+                fprintf(stderr, "option -%c is missing a required argument\n", optopt);
+                return EXIT_FAILURE;
+            }
             break;
         case '?':
             if (isprint(optopt))
@@ -43,4 +55,11 @@ int main(int argc, char *argv[])
     return 0;
 }
 
+void print_usage()
+{
+    printf("todomo usage: todomo -args"
+           "\n-h: help"
+           "\n-a: add todo"
+           "\n-p <count>: print todos\n");
+}
 /* 11 ancillary functions if any */
