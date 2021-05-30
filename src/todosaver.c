@@ -16,7 +16,9 @@ void recursive_mkdir(const char const *path)
         *sep = '/';
     }
     if (mkdir(path, 0777) && errno != EEXIST)
+    {
         printf("error while trying to create '%s'\n%m\n", path);
+    }
 }
 FILE *fopen_mkdir(const char const *path, const char const *mode)
 {

@@ -129,10 +129,13 @@ void perform_operation(const enum operation op, const char *file_path, const cha
 
 void perform_add_operation(const char const *file_path, const char const *todo_desc)
 {
-    printf("Addings todo: `%s'\n", todo_desc);
+    printf("Adding todo: `%s'\n", todo_desc);
     char desc[TODO_LEN];
     strncpy(desc, todo_desc, TODO_LEN);
     const todo t = create_todo(desc);
     printf("created todo with desc `%s'\n", t.text);
-    todo_save(&t, file_path);
+    if (todo_save(&t, file_path) != 0)
+    {
+        fprintf(stderr, "Failed to save todo %d\n");
+    }
 }
