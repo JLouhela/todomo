@@ -7,17 +7,20 @@
 #include "todo.h"
 #include "todosaver.h"
 
-enum op
+enum operation
 {
     op_add,
     op_list
 };
 void print_usage();
+void perform_operation(enum operation op, const char const *file_path, const char const *op_args);
+void perform_add_operation(char const *file_path, const char const *todo_desc);
 
 int main(int argc, char *argv[])
 {
-    char file_path[512] = "todomo.bin";
-    enum op operation = op_list;
+    char file_path[512] = ".todomo/todomo.bin";
+    char *operation_args = NULL;
+    enum operation op = op_list;
     int c = -1;
     while (1)
     {
@@ -62,12 +65,8 @@ int main(int argc, char *argv[])
             break;
 
         case 'a':
-            // TODO handle later, store op
-            printf("option -a with value `%s'\n", optarg);
-            char desc[TODO_LEN];
-            strncpy(desc, optarg, TODO_LEN);
-            const todo t = create_todo(desc);
-            printf("created todo with desc `%s'\n", t.text);
+            op = op_add;
+            operation_args = strdup(optarg);
             break;
 
         case 'f':
@@ -87,7 +86,7 @@ int main(int argc, char *argv[])
             }
             break;
         case '?':
-            /* getopt_long already printed an error message. */
+            // getopt_long already printed an error message.
             break;
 
         default:
@@ -96,7 +95,11 @@ int main(int argc, char *argv[])
         }
     }
 
-    //todo_save(&t, NULL);
+    perform_operation(op, file_path, operation_args);
+    if (operation_args)
+    {
+        free(operation_args);
+    }
     exit(EXIT_SUCCESS);
 }
 
@@ -107,4 +110,29 @@ void print_usage()
            "\n-a <todo text>: add todo, max 255 characters"
            "\n-f <file path>: file path (input/output) depending on the context"
            "\n-l <count>: list todos\n");
+}
+
+void perform_operation(const enum operation op, const char *file_path, const char *op_args)
+{
+    switch (op)
+    {
+    case op_add:
+        perform_add_operation(file_path, op_args);
+        break;
+    case op_list:
+        break;
+    default:
+        fprintf(stderr, "unhandled operation %d\n", op);
+        break;
+    }
+}
+
+void perform_add_operation(const char const *file_path, const char const *todo_desc)
+{
+    printf("Addings todo: `%s'\n", todo_desc);
+    char desc[TODO_LEN];
+    strncpy(desc, todo_desc, TODO_LEN);
+    const todo t = create_todo(desc);
+    printf("created todo with desc `%s'\n", t.text);
+    todo_save(&t, file_path);
 }
