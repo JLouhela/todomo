@@ -6,6 +6,6 @@
 #include <stdio.h>
 
 struct todo;
-int todo_save(const struct todo *const todo, FILE *dst);
+int todo_save(const struct todo *const todo, char *filePath);
 
 #endif /* _TODOSAVER_H */
