@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <sys/stat.h>
 #include <errno.h>
+#include <dirent.h>
 
 #include "todosaver.h"
 #include "todo.h"
@@ -30,15 +31,16 @@ FILE *fopen_mkdir(const char const *path, const char const *mode)
         recursive_mkdir(tmp_path);
         free(tmp_path);
     }
+#include <dirent.h>
     return fopen(path, mode);
 }
 
-int todo_save(const struct todo *const todo, const char const *filePath)
+int todo_save(const struct Todo *const todo, const char const *file_path)
 {
-    FILE *dst = fopen_mkdir(filePath, "wb");
+    FILE *dst = fopen_mkdir(file_path, "wb");
     if (dst != NULL)
     {
-        printf("writing todo to %s..", filePath);
+        printf("writing todo to %s..", file_path);
         fwrite(todo, sizeof(todo), 1, dst);
         fclose(dst);
         return 0;

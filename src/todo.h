@@ -3,13 +3,13 @@
 #ifndef _TODO_H
 #define _TODO_H
 
-#define TODO_LEN 255
+#include "constants.h"
 
-typedef struct todo
+typedef struct Todo
 {
-    char text[TODO_LEN + 1];
-} todo;
+    char text[TODO_LEN];
+} Todo;
 
-todo create_todo(const char *text);
+Todo create_todo(const char *text);
 
 #endif /* _TODO_H */

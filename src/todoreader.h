@@ -6,6 +6,6 @@
 #include <stdio.h>
 #include "todo.h"
 
-todo todo_read(int index, FILE *src);
+Todo todo_read(int index, FILE *src);
 
 #endif /* _TODOREADER_H */

@@ -1,141 +1,96 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <getopt.h>
-#include <ctype.h>
+#include <stdbool.h>
 #include <string.h>
+#include <dirent.h>
+#include <unistd.h>
 
-#include "todo.h"
-#include "todosaver.h"
+#include "cli.h"
 
-enum operation
-{
-    op_add,
-    op_list
-};
-void print_usage();
-void perform_operation(enum operation op, const char const *file_path, const char const *op_args);
-void perform_add_operation(char const *file_path, const char const *todo_desc);
+bool todomo_dir_exists(const char *const root);
+bool find_todomo_repository(char *repo_root_output);
 
 int main(int argc, char *argv[])
 {
-    char file_path[512] = ".todomo/todomo.bin";
-    char *operation_args = NULL;
-    enum operation op = op_list;
-    int c = -1;
-    while (1)
+    if (argc < 2)
     {
-        static struct option long_options[] =
-            {
-                {"add", required_argument, 0, 'a'},
-                {"file", required_argument, 0, 'f'},
-                {"list", optional_argument, 0, 'l'},
-                {"help", no_argument, 0, 'h'},
-                {0, 0, 0, 0}};
-
-        // getopt_long stores the option index here.
-        int option_index = 0;
-
-        c = getopt_long(argc, argv, ":a:f:hl::",
-                        long_options, &option_index);
-
-        // Detect the end of the options.
-        if (c == -1)
-        {
-            break;
-        }
-
-        switch (c)
-        {
-        case 0:
-            // If this option set a flag, do nothing else now.
-            if (long_options[option_index].flag != 0)
-            {
-                break;
-            }
-            printf("option %s", long_options[option_index].name);
-            if (optarg)
-            {
-                printf(" with arg %s", optarg);
-            }
-            printf("\n");
-            break;
-
-        case 'h':
-            print_usage();
-            break;
-
-        case 'a':
-            op = op_add;
-            operation_args = strdup(optarg);
-            break;
-
-        case 'f':
-            // TODO logger + log levels
-            printf("Set filepath to %s\n", optarg);
-            strcpy(file_path, optarg);
-            break;
-
-        case 'l':
-            if (optarg)
-            {
-                printf("option -l with value `%s'\n", optarg);
-            }
-            else
-            {
-                printf("option -l with no arg\n");
-            }
-            break;
-        case '?':
-            // getopt_long already printed an error message.
-            break;
-
-        default:
-            print_usage();
-            exit(EXIT_FAILURE);
-        }
+        print_usage();
+        exit(EXIT_FAILURE);
+    }
+    enum operation op = get_operation(argv[1]);
+    if (op == op_invalid)
+    {
+        print_usage();
+        exit(EXIT_FAILURE);
     }
 
-    perform_operation(op, file_path, operation_args);
-    if (operation_args)
+    if (op == op_init && todomo_dir_exists("."))
     {
-        free(operation_args);
+        fprintf(stderr, "todomo repository already present in current directory\n");
+        exit(EXIT_FAILURE);
     }
+    char todomo_dir[PATH_MAX];
+    if (op != op_init && !find_todomo_repository(todomo_dir))
+    {
+        fprintf(stderr, "not in a todomo repository\n");
+        exit(EXIT_FAILURE);
+    }
+
+    void *op_args = get_op_args(op, argv, 2, argc);
+
+    char binary_path[PATH_MAX];
+    strcpy(binary_path, todomo_dir);
+    strcat(binary_path, "/.todomo/todomo.bin");
+    perform_operation(op, binary_path, op_args);
+
     exit(EXIT_SUCCESS);
 }
 
-void print_usage()
+bool todomo_dir_exists(const char *const root)
 {
-    printf("todomo usage: todomo -args"
-           "\n-h: help"
-           "\n-a <todo text>: add todo, max 255 characters"
-           "\n-f <file path>: file path (input/output) depending on the context"
-           "\n-l <count>: list todos\n");
+    char tmp_path[strlen(root) + strlen(TODOMO_FOLDER) + 1];
+    strcpy(tmp_path, root);
+    strcat(tmp_path, "/");
+    strcat(tmp_path, TODOMO_FOLDER);
+
+    DIR *dir = opendir(tmp_path);
+    if (dir)
+    {
+        closedir(dir);
+        return true;
+    }
+    return false;
 }
 
-void perform_operation(const enum operation op, const char *file_path, const char *op_args)
+bool find_todomo_repository(char *todomo_folder_output)
 {
-    switch (op)
+    char cwd[PATH_MAX];
+    if (getcwd(cwd, sizeof(cwd)) != NULL)
     {
-    case op_add:
-        perform_add_operation(file_path, op_args);
-        break;
-    case op_list:
-        break;
-    default:
-        fprintf(stderr, "unhandled operation %d\n", op);
-        break;
+        while (cwd != NULL && strlen(cwd) > 0)
+        {
+            if (todomo_dir_exists(cwd))
+            {
+                strcpy(todomo_folder_output, cwd);
+                strcat(todomo_folder_output, "/");
+                strcat(todomo_folder_output, TODOMO_FOLDER);
+                return true;
+            }
+            char *sep = strrchr(cwd, '/');
+            if (sep != NULL)
+            {
+                *sep = 0;
+            }
+            else
+            {
+                break;
+            }
+        }
     }
-}
-
-void perform_add_operation(const char const *file_path, const char const *todo_desc)
-{
-    printf("Adding todo: `%s'\n", todo_desc);
-    char desc[TODO_LEN];
-    strncpy(desc, todo_desc, TODO_LEN);
-    const todo t = create_todo(desc);
-    printf("created todo with desc `%s'\n", t.text);
-    if (todo_save(&t, file_path) != 0)
+    else
     {
-        fprintf(stderr, "Failed to save todo %d\n");
+        perror("getcwd() error");
+        return false;
     }
+    return false;
 }

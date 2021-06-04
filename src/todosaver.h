@@ -5,7 +5,7 @@
 
 #include <stdio.h>
 
-struct todo;
-int todo_save(const struct todo *const todo, const char const *filePath);
+struct Todo;
+int todo_save(const struct Todo *const todo, const char const *filePath);
 
 #endif /* _TODOSAVER_H */
