@@ -40,7 +40,7 @@ int main(int argc, char *argv[])
 
     char binary_path[PATH_MAX];
     strcpy(binary_path, todomo_dir);
-    strcat(binary_path, "/.todomo/todomo.bin");
+    strcat(binary_path, "/todomo.bin");
     perform_operation(op, binary_path, op_args);
 
     exit(EXIT_SUCCESS);

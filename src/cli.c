@@ -4,12 +4,31 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include <string.h>
+#include <sys/stat.h>
+#include <errno.h>
+#include <dirent.h>
 
 #include "todo.h"
 #include "todosaver.h"
 
 void _perform_add_operation(char const *file_path, const OpAddArgs *add_args);
+void _perform_init_operation(char const *file_path, const OpInitArgs *init_args);
 OpAddArgs *_get_op_add_args(char *argv[], int arg_start, int argc);
+
+void _recursive_mkdir(const char const *path)
+{
+    char *sep = strrchr(path, '/');
+    if (sep != NULL)
+    {
+        *sep = 0;
+        _recursive_mkdir(path);
+        *sep = '/';
+    }
+    if (mkdir(path, 0777) && errno != EEXIST)
+    {
+        printf("error while trying to create '%s'\n%m\n", path);
+    }
+}
 
 void print_usage()
 {
@@ -55,6 +74,11 @@ void perform_operation(const enum operation op, const char *file_path, const voi
         _perform_add_operation(file_path, add_args);
         break;
     }
+    case op_init:
+    {
+        _perform_init_operation(file_path, NULL);
+        break;
+    }
     case op_list:
     {
         break;
@@ -78,6 +102,13 @@ void _perform_add_operation(const char const *file_path, const OpAddArgs *add_ar
     {
         fprintf(stderr, "Failed to save todo '%s' to '%s'\n", desc, file_path);
     }
+}
+
+void _perform_init_operation(char const *file_path, const OpInitArgs *init_args)
+{
+    printf("Initializing repository to '%s'\n", file_path);
+    // TODO mkdir
+    // TODO mkfile
 }
 
 void *get_op_args(enum operation op, char *argv[], int arg_start, int argc)

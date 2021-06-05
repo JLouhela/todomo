@@ -39,7 +39,6 @@ typedef struct OpRemoveArgs
 
 typedef struct OpInitArgs
 {
-    char pwd[PATH_MAX];
 } OpInitArgs;
 
 #endif /* _CLI_OPERATIONS_H */
