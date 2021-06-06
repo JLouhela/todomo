@@ -10,25 +10,12 @@
 
 #include "todo.h"
 #include "todosaver.h"
+#include "constants.h"
 
 void _perform_add_operation(char const *file_path, const OpAddArgs *add_args);
-void _perform_init_operation(char const *file_path, const OpInitArgs *init_args);
+void _perform_init_operation(const OpInitArgs *init_args);
 OpAddArgs *_get_op_add_args(char *argv[], int arg_start, int argc);
-
-void _recursive_mkdir(const char const *path)
-{
-    char *sep = strrchr(path, '/');
-    if (sep != NULL)
-    {
-        *sep = 0;
-        _recursive_mkdir(path);
-        *sep = '/';
-    }
-    if (mkdir(path, 0777) && errno != EEXIST)
-    {
-        printf("error while trying to create '%s'\n%m\n", path);
-    }
-}
+void print_usage();
 
 void print_usage()
 {
@@ -76,7 +63,7 @@ void perform_operation(const enum operation op, const char *file_path, const voi
     }
     case op_init:
     {
-        _perform_init_operation(file_path, NULL);
+        _perform_init_operation(NULL);
         break;
     }
     case op_list:
@@ -104,11 +91,27 @@ void _perform_add_operation(const char const *file_path, const OpAddArgs *add_ar
     }
 }
 
-void _perform_init_operation(char const *file_path, const OpInitArgs *init_args)
+void _perform_init_operation(const OpInitArgs *init_args)
 {
-    printf("Initializing repository to '%s'\n", file_path);
-    // TODO mkdir
-    // TODO mkfile
+    char file_path[PATH_MAX];
+    strcpy(file_path, TODOMO_FOLDER);
+    if (mkdir(file_path, 0777) && errno != EEXIST)
+    {
+        printf("error while trying to create todomo root folder (%s)\n", file_path);
+        return;
+    }
+    strcat(file_path, "/");
+    strcat(file_path, TODOMO_FILE);
+    FILE *file_ptr = fopen(file_path, "w");
+    if (file_ptr)
+    {
+        fclose(file_ptr);
+        printf("Initialized new todomo repository\n");
+    }
+    else
+    {
+        fprintf(stderr, "Failed to initialize todomo repository, could not create binary\n");
+    }
 }
 
 void *get_op_args(enum operation op, char *argv[], int arg_start, int argc)
