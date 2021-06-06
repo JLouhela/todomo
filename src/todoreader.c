@@ -1,9 +1,11 @@
-#include "todosaver.h"
-#include "todo.h"
+#include "todoreader.h"
 
-Todo todo_read(int index, FILE *src)
+bool todo_read(int index, Todo *t, FILE *src)
 {
-    printf("todo_read");
-    Todo t;
-    return t;
+    int ret = fread(t, sizeof(struct Todo), 1, src);
+    if (ret == 0)
+    {
+        return false;
+    }
+    return true;
 }

@@ -10,11 +10,14 @@
 
 #include "todo.h"
 #include "todosaver.h"
+#include "todoreader.h"
 #include "constants.h"
 
 void _perform_add_operation(char const *file_path, const OpAddArgs *add_args);
+void _perform_list_operation(char const *file_path, const OpListArgs *list_args);
 void _perform_init_operation(const OpInitArgs *init_args);
 OpAddArgs *_get_op_add_args(char *argv[], int arg_start, int argc);
+OpListArgs *_get_op_list_args(char *argv[], int arg_start, int argc);
 void print_usage();
 
 void print_usage()
@@ -59,6 +62,7 @@ void perform_operation(const enum operation op, const char *file_path, const voi
     {
         OpAddArgs *add_args = (OpAddArgs *)op_args;
         _perform_add_operation(file_path, add_args);
+        free(add_args);
         break;
     }
     case op_init:
@@ -68,6 +72,9 @@ void perform_operation(const enum operation op, const char *file_path, const voi
     }
     case op_list:
     {
+        OpListArgs *list_args = (OpListArgs *)op_args;
+        _perform_list_operation(file_path, list_args);
+        free(list_args);
         break;
     }
     default:
@@ -89,6 +96,35 @@ void _perform_add_operation(const char const *file_path, const OpAddArgs *add_ar
     {
         fprintf(stderr, "Failed to save todo '%s' to '%s'\n", desc, file_path);
     }
+}
+
+void _perform_list_operation(char const *file_path, const OpListArgs *list_args)
+{
+    int count = DEFAULT_LIST_COUNT;
+    if (list_args && list_args->count > 0)
+    {
+        count = list_args->count;
+    }
+    FILE *src = fopen(file_path, "r");
+    if (src == NULL)
+    {
+        fprintf(stderr, "Failed to open todofile (%s) for list operation", file_path);
+    }
+
+    for (int i = 0; i < count; ++i)
+    {
+        Todo t;
+        bool ret = todo_read(i, &t, src);
+        if (ret)
+        {
+            printf("TODO: %s\n", t.text);
+        }
+        else
+        {
+            break;
+        }
+    }
+    fclose(src);
 }
 
 void _perform_init_operation(const OpInitArgs *init_args)
@@ -122,14 +158,13 @@ void *get_op_args(enum operation op, char *argv[], int arg_start, int argc)
     case op_add:
     {
         OpAddArgs *op_add_args = _get_op_add_args(argv, arg_start, argc);
-        void *ret = (void *)op_add_args;
-        return ret;
+        return (void *)op_add_args;
     }
 
     case op_list:
     {
-        printf("TODO");
-        break;
+        OpListArgs *op_list_args = _get_op_list_args(argv, arg_start, argc);
+        return (void *)op_list_args;
     }
     case op_init:
     case op_invalid:
@@ -141,6 +176,7 @@ void *get_op_args(enum operation op, char *argv[], int arg_start, int argc)
     return NULL;
 }
 
+// TODO why ptr?
 OpAddArgs *_get_op_add_args(char *argv[], int arg_start, int argc)
 {
     OpAddArgs *output = (OpAddArgs *)malloc(sizeof(OpAddArgs));
@@ -155,5 +191,16 @@ OpAddArgs *_get_op_add_args(char *argv[], int arg_start, int argc)
         strcat(output->description, " ");
         strcat(output->description, argv[i]);
     }
+    return output;
+}
+
+OpListArgs *_get_op_list_args(char *argv[], int arg_start, int argc)
+{
+    OpListArgs *output = (OpListArgs *)malloc(sizeof(OpListArgs));
+    if (argc < 3)
+    {
+        return output;
+    }
+    output->count = atoi(argv[arg_start]);
     return output;
 }
