@@ -1,4 +1,4 @@
-/* todoreader.h - todomo reading functionality */
+/* todo_reader.h - todomo reading functionality */
 
 #ifndef _TODOREADER_H
 #define _TODOREADER_H

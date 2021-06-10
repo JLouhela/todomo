@@ -1,10 +1,10 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include "todosaver.h"
+#include "todo_saver.h"
 #include "todo.h"
 
-// TODO get FILE* in to align with todoreader.h
+// TODO get FILE* in to align with todo_reader.h
 int todo_save(const struct Todo *const todo, const char const *file_path)
 {
     FILE *dst = fopen(file_path, "a");

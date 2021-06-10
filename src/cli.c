@@ -9,8 +9,8 @@
 #include <dirent.h>
 
 #include "todo.h"
-#include "todosaver.h"
-#include "todoreader.h"
+#include "todo_saver.h"
+#include "todo_reader.h"
 #include "constants.h"
 
 void _perform_add_operation(char const *file_path, const OpAddArgs *add_args);

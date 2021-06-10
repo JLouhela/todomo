@@ -1,4 +1,4 @@
-/* todosaver.h - todomo saving functionality */
+/* todo_saver.h - todomo saving functionality */
 
 #ifndef _TODOSAVER_H
 #define _TODOSAVER_H
