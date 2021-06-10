@@ -16,8 +16,11 @@
 void _perform_add_operation(char const *file_path, const OpAddArgs *add_args);
 void _perform_list_operation(char const *file_path, const OpListArgs *list_args);
 void _perform_init_operation(const OpInitArgs *init_args);
+void _perform_export_operation(char const *file_path, const OpExportArgs *export_args);
+
 OpAddArgs *_get_op_add_args(char *argv[], int arg_start, int argc);
 OpListArgs *_get_op_list_args(char *argv[], int arg_start, int argc);
+OpExportArgs *_get_op_export_args(char *argv[], int arg_start, int argc);
 void print_usage();
 
 void print_usage()
@@ -51,6 +54,10 @@ enum operation get_operation(const char const *arg)
     {
         return op_remove;
     }
+    if (strcmp(arg, OPERATION_EXPORT) == 0)
+    {
+        return op_export;
+    }
     return op_invalid;
 }
 
@@ -75,6 +82,12 @@ void perform_operation(const enum operation op, const char *file_path, const voi
         OpListArgs *list_args = (OpListArgs *)op_args;
         _perform_list_operation(file_path, list_args);
         free(list_args);
+        break;
+    }
+    case op_export:
+    {
+        OpExportArgs *export_args = (OpExportArgs *)op_args;
+        _perform_export_operation(file_path, export_args);
         break;
     }
     default:
@@ -125,6 +138,11 @@ void _perform_list_operation(char const *file_path, const OpListArgs *list_args)
     fclose(src);
 }
 
+void _perform_export_operation(char const *file_path, const OpExportArgs *export_args)
+{
+    printf("TODO: print md to %s\n", export_args->output_file_path);
+}
+
 void _perform_init_operation(const OpInitArgs *init_args)
 {
     char file_path[PATH_MAX];
@@ -164,6 +182,11 @@ void *get_op_args(enum operation op, char *argv[], int arg_start, int argc)
         OpListArgs *op_list_args = _get_op_list_args(argv, arg_start, argc);
         return (void *)op_list_args;
     }
+    case op_export:
+    {
+        OpExportArgs *op_export_args = _get_op_export_args(argv, arg_start, argc);
+        return (void *)op_export_args;
+    }
     case op_init:
     case op_invalid:
     default:
@@ -201,5 +224,14 @@ OpListArgs *_get_op_list_args(char *argv[], int arg_start, int argc)
         return output;
     }
     output->count = atoi(argv[arg_start]);
+    return output;
+}
+
+OpExportArgs *_get_op_export_args(char *argv[], int arg_start, int argc)
+{
+    OpExportArgs *output = (OpExportArgs *)malloc(sizeof(OpExportArgs));
+    // No args supported yet, default to md
+    output->type = export_md;
+    strcpy(output->output_file_path, "todo.md");
     return output;
 }

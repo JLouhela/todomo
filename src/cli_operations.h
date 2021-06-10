@@ -10,6 +10,7 @@ static const char *OPERATION_ADD = "add";
 static const char *OPERATION_REMOVE = "remove";
 static const char *OPERATION_LIST = "list";
 static const char *OPERATION_INIT = "init";
+static const char *OPERATION_EXPORT = "export";
 
 enum operation
 {
@@ -17,7 +18,13 @@ enum operation
     op_add = 1,
     op_remove = 2,
     op_list = 3,
-    op_init = 4
+    op_init = 4,
+    op_export = 5,
+};
+
+enum export_type
+{
+    export_md = 0
 };
 
 // TODO define payloads for operations = structs
@@ -40,5 +47,11 @@ typedef struct OpRemoveArgs
 typedef struct OpInitArgs
 {
 } OpInitArgs;
+
+typedef struct OpExportArgs
+{
+    int type;
+    char output_file_path[PATH_MAX];
+} OpExportArgs;
 
 #endif /* _CLI_OPERATIONS_H */
