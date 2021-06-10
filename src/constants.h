@@ -1,10 +1,12 @@
-/* constants.h -  */
+/* constants.h - constants across various modules */
+
+#include <limits.h>
 
 #ifndef _CONSTANTS_H
 #define _CONSTANTS_H
 
 #define TODO_LEN 1024
-#define DEFAULT_LIST_COUNT 5
+#define DEFAULT_LIST_COUNT INT_MAX
 
 #define KNRM "\x1B[0m"
 #define KRED "\x1B[31m"

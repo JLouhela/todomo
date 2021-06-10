@@ -87,11 +87,9 @@ void perform_operation(const enum operation op, const char *file_path, const voi
 
 void _perform_add_operation(const char const *file_path, const OpAddArgs *add_args)
 {
-    printf("Adding todo: `%s'\n", add_args->description);
     char desc[TODO_LEN];
     strncpy(desc, add_args->description, TODO_LEN);
     const Todo t = create_todo(desc);
-    printf("created todo with desc `%s'\n", t.text);
     if (todo_save(&t, file_path) != 0)
     {
         fprintf(stderr, "Failed to save todo '%s' to '%s'\n", desc, file_path);
@@ -197,6 +195,7 @@ OpAddArgs *_get_op_add_args(char *argv[], int arg_start, int argc)
 OpListArgs *_get_op_list_args(char *argv[], int arg_start, int argc)
 {
     OpListArgs *output = (OpListArgs *)malloc(sizeof(OpListArgs));
+    output->count = DEFAULT_LIST_COUNT;
     if (argc < 3)
     {
         return output;
