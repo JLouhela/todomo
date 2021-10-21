@@ -103,10 +103,15 @@ void _perform_add_operation(const char const *file_path, const OpAddArgs *add_ar
     char desc[TODO_LEN];
     strncpy(desc, add_args->description, TODO_LEN);
     const Todo t = create_todo(desc);
-    if (todo_save(&t, file_path) != 0)
+    FILE *dst = fopen(file_path, "a");
+    if (dst == NULL)
     {
-        fprintf(stderr, "Failed to save todo '%s' to '%s'\n", desc, file_path);
+        fprintf(stderr, "Failed to perform add op: cannot write to '%s'\n", file_path);
+        return;
     }
+
+    todo_save(&t, dst);
+    fclose(dst);
 }
 
 void _perform_list_operation(char const *file_path, const OpListArgs *list_args)
