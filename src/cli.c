@@ -11,6 +11,7 @@
 #include "todo.h"
 #include "todo_saver.h"
 #include "todo_reader.h"
+#include "todo_state.h"
 #include "constants.h"
 
 void _perform_add_operation(char const *file_path, const OpAddArgs *add_args);
@@ -29,7 +30,7 @@ void print_usage()
            "\n add <todo description>: add new todo"
            "\n init : init new todomo project"
            "\n list <count> : list existing todos, argument optional"
-           "\n remove <index> : remove todo by index\n");
+           "\n remove <id> : remove todo by id\n");
 }
 
 enum operation get_operation(const char const *arg)
@@ -102,16 +103,16 @@ void _perform_add_operation(const char const *file_path, const OpAddArgs *add_ar
 {
     char desc[TODO_LEN];
     strncpy(desc, add_args->description, TODO_LEN);
-    const Todo t = create_todo(desc);
-    FILE *dst = fopen(file_path, "a");
-    if (dst == NULL)
+
+    const id_t last_id = get_last_id(file_path);
+    if (last_id < 0)
     {
-        fprintf(stderr, "Failed to perform add op: cannot write to '%s'\n", file_path);
+        fprintf(stderr, "Failed to perform add op: could not read last id");
         return;
     }
 
-    todo_save(&t, dst);
-    fclose(dst);
+    const Todo t = create_todo(desc, last_id + 1, TODO_STATE_OPEN);
+    todo_save(&t, file_path);
 }
 
 void _perform_list_operation(char const *file_path, const OpListArgs *list_args)
@@ -121,26 +122,24 @@ void _perform_list_operation(char const *file_path, const OpListArgs *list_args)
     {
         count = list_args->count;
     }
-    FILE *src = fopen(file_path, "r");
-    if (src == NULL)
+
+    const int max_count = todo_count(file_path);
+    count = max_count < count ? max_count : count;
+
+    if (count <= 0)
     {
-        fprintf(stderr, "Failed to open todofile (%s) for list operation", file_path);
+        return;
     }
 
-    for (int i = 0; i < count; ++i)
+    Todo todos[count];
+    const int todo_read_count = todo_read_amount(count, file_path, todos);
+    for (int i = 0; i < todo_read_count; ++i)
     {
-        Todo t;
-        bool ret = todo_read(i, &t, src);
-        if (ret)
-        {
-            printf("TODO: %s\n", t.text);
-        }
-        else
-        {
-            break;
-        }
+        Todo *t = &todos[i];
+        char state_str[TODO_STATE_BUFFER_LEN];
+        todo_state_to_string(t->state, state_str);
+        printf("TODO: %d-%s-%s\n", t->id, state_str, t->text);
     }
-    fclose(src);
 }
 
 void _perform_export_operation(char const *file_path, const OpExportArgs *export_args)

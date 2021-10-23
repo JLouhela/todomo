@@ -4,8 +4,9 @@
 #define _TODOSAVER_H
 
 #include <stdio.h>
+#include <stdbool.h>
 
 struct Todo;
-void todo_save(const struct Todo *const todo, FILE *file);
+bool todo_save(const struct Todo *const todo, const char const *file_path);
 
 #endif /* _TODOSAVER_H */
