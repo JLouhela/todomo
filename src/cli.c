@@ -62,14 +62,14 @@ enum operation get_operation(const char const *arg)
     return op_invalid;
 }
 
-void perform_operation(const enum operation op, const char *file_path, const void *op_args)
+void perform_operation(const enum operation op, const char *todomo_folder, const void *op_args)
 {
     switch (op)
     {
     case op_add:
     {
         OpAddArgs *add_args = (OpAddArgs *)op_args;
-        _perform_add_operation(file_path, add_args);
+        _perform_add_operation(todomo_folder, add_args);
         free(add_args);
         break;
     }
@@ -81,14 +81,14 @@ void perform_operation(const enum operation op, const char *file_path, const voi
     case op_list:
     {
         OpListArgs *list_args = (OpListArgs *)op_args;
-        _perform_list_operation(file_path, list_args);
+        _perform_list_operation(todomo_folder, list_args);
         free(list_args);
         break;
     }
     case op_export:
     {
         OpExportArgs *export_args = (OpExportArgs *)op_args;
-        _perform_export_operation(file_path, export_args);
+        _perform_export_operation(todomo_folder, export_args);
         break;
     }
     default:
@@ -99,12 +99,12 @@ void perform_operation(const enum operation op, const char *file_path, const voi
     }
 }
 
-void _perform_add_operation(const char const *file_path, const OpAddArgs *add_args)
+void _perform_add_operation(const char const *todomo_folder, const OpAddArgs *add_args)
 {
     char desc[TODO_LEN];
     strncpy(desc, add_args->description, TODO_LEN);
 
-    const id_t last_id = get_last_id(file_path);
+    const todo_id_t last_id = todo_reader_get_last_id(todomo_folder);
     if (last_id < 0)
     {
         fprintf(stderr, "Failed to perform add op: could not read last id");
@@ -112,10 +112,10 @@ void _perform_add_operation(const char const *file_path, const OpAddArgs *add_ar
     }
 
     const Todo t = create_todo(desc, last_id + 1, TODO_STATE_OPEN);
-    todo_save(&t, file_path);
+    todo_save(&t, todomo_folder);
 }
 
-void _perform_list_operation(char const *file_path, const OpListArgs *list_args)
+void _perform_list_operation(char const *todomo_folder, const OpListArgs *list_args)
 {
     int count = DEFAULT_LIST_COUNT;
     if (list_args && list_args->count > 0)
@@ -123,7 +123,7 @@ void _perform_list_operation(char const *file_path, const OpListArgs *list_args)
         count = list_args->count;
     }
 
-    const int max_count = todo_count(file_path);
+    const int max_count = todo_reader_count(todomo_folder);
     count = max_count < count ? max_count : count;
 
     if (count <= 0)
@@ -132,7 +132,7 @@ void _perform_list_operation(char const *file_path, const OpListArgs *list_args)
     }
 
     Todo todos[count];
-    const int todo_read_count = todo_read_amount(count, file_path, todos);
+    const int todo_read_count = todo_reader_read_amount(count, todomo_folder, todos);
     for (int i = 0; i < todo_read_count; ++i)
     {
         Todo *t = &todos[i];
@@ -142,7 +142,7 @@ void _perform_list_operation(char const *file_path, const OpListArgs *list_args)
     }
 }
 
-void _perform_export_operation(char const *file_path, const OpExportArgs *export_args)
+void _perform_export_operation(char const *todomo_folder, const OpExportArgs *export_args)
 {
     printf("TODO: print md to %s\n", export_args->output_file_path);
 }
@@ -154,25 +154,14 @@ void _perform_init_operation(const OpInitArgs *init_args)
     if (mkdir(file_path, 0777) && errno != EEXIST)
     {
         printf("error while trying to create todomo root folder (%s)\n", file_path);
+        // TODO return error code
         return;
     }
-    strcat(file_path, "/");
-    strcat(file_path, TODOMO_FILE);
-    FILE *file_ptr = fopen(file_path, "w");
-    if (file_ptr)
-    {
-        fclose(file_ptr);
-        printf("Initialized new todomo repository\n");
-    }
-    else
-    {
-        fprintf(stderr, "Failed to initialize todomo repository, could not create binary\n");
-    }
+    printf("Initialized new todomo repository\n");
 }
 
 void *get_op_args(enum operation op, char *argv[], int arg_start, int argc)
 {
-    // TODO: build struct depending on the type, cast to void and return
     switch (op)
     {
     case op_add:
@@ -236,6 +225,6 @@ OpExportArgs *_get_op_export_args(char *argv[], int arg_start, int argc)
     OpExportArgs *output = (OpExportArgs *)malloc(sizeof(OpExportArgs));
     // No args supported yet, default to md
     output->type = export_md;
-    strcpy(output->output_file_path, "todo.md");
+    strcpy(output->output_file_path, "TODO.md");
     return output;
 }

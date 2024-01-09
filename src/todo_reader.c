@@ -1,7 +1,7 @@
 #include "todo_reader.h"
+#include <dirent.h>
 
 bool _todo_read_from_file(Todo *t, FILE *file);
-int _get_todo_count(FILE *file);
 
 bool _todo_read_from_file(Todo *t, FILE *file)
 {
@@ -13,7 +13,7 @@ bool _todo_read_from_file(Todo *t, FILE *file)
     return true;
 }
 
-int todo_read_amount(int amount, const char const *file_path, Todo *todos)
+int todo_reader_read_amount(int amount, const char const *file_path, Todo *todos)
 {
     FILE *src = fopen(file_path, "r");
     if (src == NULL)
@@ -35,69 +35,33 @@ int todo_read_amount(int amount, const char const *file_path, Todo *todos)
     return read_count;
 }
 
-int _get_todo_count(FILE *file)
+int todo_reader_count(const char const *todomo_folder)
 {
-    size_t cur_pos = ftell(file);
-
-    const int fseek_ok = fseek(file, 0, SEEK_END);
-    size_t ret = -1;
-    if (fseek_ok == 0)
+    DIR* dir = NULL;
+    dir = opendir(todomo_folder); 
+    if (!dir) 
     {
-        ret = ftell(file);
+        fprintf(stderr, "Failed to open todomo directory %s\n", todomo_folder);
+        return -1;
     }
-    fseek(file, cur_pos, SEEK_SET);
-    return ret;
-}
-
-int todo_count(const char const *file_path)
-{
-    FILE *file = fopen(file_path, "r");
-    if (file == NULL)
+    struct dirent *entry = NULL;
+    int count = 0;
+    entry = readdir(dir);
+    while (entry != NULL)
     {
-        fprintf(stderr, "Failed to open todofile (%s) when reading todo count", file_path);
-        return false;
+        if (entry->d_type == DT_REG)
+        { 
+            // DT_REG = regular file
+            count++;
+        }
+        entry = readdir(dir);
     }
-    const int count = _get_todo_count(file);
-    fclose(file);
+    
+    closedir(dir);
     return count;
 }
 
-id_t get_last_id(const char const *file_path)
+todo_id_t todo_reader_get_last_id(const char const *todomo_folder)
 {
-    FILE *file = fopen(file_path, "r");
-    if (file == NULL)
-    {
-        fprintf(stderr, "Failed to open todofile (%s) for next id query", file_path);
-        return -1;
-    }
-    const int todo_count = _get_todo_count(file);
-
-    int ret = -1;
-    // Empty file => 0 is ok
-    if (todo_count == 0)
-    {
-        ret = 0;
-    }
-    else if (todo_count == -1)
-    {
-        ret = -1;
-    }
-    else
-    {
-        rewind(file);
-
-        Todo t;
-        bool ok = _todo_read_from_file(&t, file);
-        if (ok)
-        {
-            ret = t.id;
-        }
-        else
-        {
-            return -1;
-        }
-    }
-
-    fclose(file);
-    return ret;
+   return -1;
 }

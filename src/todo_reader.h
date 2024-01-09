@@ -7,10 +7,10 @@
 #include <stdbool.h>
 #include "todo.h"
 
-int todo_read_amount(int amount, const char const *file_path, Todo *todos);
+int todo_reader_read_amount(int amount, const char const *todomo_folder_path, Todo *todos);
 
-id_t get_last_id(const char const *file_path);
+todo_id_t todo_reader_get_last_id(const char const *todomo_folder_path);
 
-int todo_count(const char const *file_path);
+int todo_reader_count(const char const *todomo_folder_path);
 
 #endif /* _TODOREADER_H */

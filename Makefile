@@ -38,11 +38,18 @@ DEBUG_SYM = -g
 
 RESULTS = $(patsubst $(PATHT)Test%.c,$(PATHR)Test%.txt,$(SRCT))
 
+
+IGNORES = `grep -s IGNORE $(PATHR)*.txt`
+FAILS = `grep -s FAIL $(PATHR)*.txt`
+PASSES = `grep -s PASS $(PATHR)*.txt`
+
 test: $(BUILD_PATHS) $(RESULTS)
 	@echo "-----------------------\nIGNORES:\n-----------------------"
 	@echo `grep -s IGNORE $(PATHR)*.txt`
 	@echo "-----------------------\nFAILURES:\n-----------------------"
 	@echo `grep -s FAIL $(PATHR)*.txt`
+	@echo "-----------------------\nPASSES:\n-----------------------"
+	@echo `grep -s PASS $(PATHR)*.txt`
 	@echo "\nDONE"
 
 $(PATHR)%.txt: $(PATHB)%.$(TARGET_EXTENSION)

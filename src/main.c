@@ -37,11 +37,7 @@ int main(int argc, char *argv[])
     }
 
     void *op_args = get_op_args(op, argv, 2, argc);
-
-    char binary_path[PATH_MAX];
-    strcpy(binary_path, todomo_dir);
-    strcat(binary_path, "/todomo.bin");
-    perform_operation(op, binary_path, op_args);
+    perform_operation(op, todomo_dir, op_args);
 
     exit(EXIT_SUCCESS);
 }
