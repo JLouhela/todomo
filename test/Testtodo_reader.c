@@ -60,7 +60,7 @@ void setup_test_files(int count, int name_index)
     for (int i = 0; i < count; ++i, ++name_index)
     {
         char file_path[256];
-        snprintf(file_path, sizeof(file_path), "%s/test_file%d", TEST_TMP_DIR, name_index);
+        snprintf(file_path, sizeof(file_path), "%s/test_file_%d", TEST_TMP_DIR, name_index);
         create_file(file_path);
     } 
 }
@@ -81,6 +81,31 @@ void test_read_count_wrong_dir()
     int count = todo_reader_count("asdasdasdasdasdaser33108u3");
     TEST_ASSERT_EQUAL(-1, count);
 }
+
+void test_last_id()
+{
+    setup_test_files(5, 100);
+    todo_id_t last_id = todo_reader_get_last_id(TEST_TMP_DIR);
+    TEST_ASSERT_EQUAL(104, last_id);
+    setup_test_files(1, 250);
+    last_id = todo_reader_get_last_id(TEST_TMP_DIR);
+    TEST_ASSERT_EQUAL(250, last_id);
+}
+
+void test_last_id_fail()
+{
+    todo_id_t last_id = todo_reader_get_last_id(TEST_TMP_DIR);
+    TEST_ASSERT_EQUAL(-1, last_id);
+    char file_path[256];
+    snprintf(file_path, sizeof(file_path), "%s/test_file", TEST_TMP_DIR);
+    create_file(file_path);
+    last_id = todo_reader_get_last_id(TEST_TMP_DIR);
+    TEST_ASSERT_EQUAL(-1, last_id);
+    last_id = todo_reader_get_last_id("asdasdasdasdasd12312easdiu1j4");
+    TEST_ASSERT_EQUAL(-1, last_id);
+}
+
+
 // TEST CASES END
 
 
@@ -89,6 +114,8 @@ int main(void)
     UNITY_BEGIN();
     RUN_TEST(test_read_count);
     RUN_TEST(test_read_count_wrong_dir);
+    RUN_TEST(test_last_id);
+    RUN_TEST(test_last_id_fail);
 
     UNITY_END();
 

@@ -1,7 +1,12 @@
 #include "todo_reader.h"
+#include <stdio.h>
+#include <stdlib.h>
 #include <dirent.h>
+#include <string.h>
+#include <ctype.h>
 
 bool _todo_read_from_file(Todo *t, FILE *file);
+todo_id_t _parse_id_from_filename(const char const* file_name);
 
 bool _todo_read_from_file(Todo *t, FILE *file)
 {
@@ -61,7 +66,49 @@ int todo_reader_count(const char const *todomo_folder)
     return count;
 }
 
+todo_id_t _parse_id_from_filename(const char const* file_name)
+{
+    todo_id_t id = 0;
+    int multiplier = 1;
+    for (int i = strlen(file_name) - 1; i >= 0; --i)
+    {
+        if (isdigit(file_name[i]))
+        {
+            id += (file_name[i] - '0') * multiplier;
+            multiplier *= 10;
+        }
+        else
+        {
+            break;
+        }
+    }
+    if (id == 0) 
+    {
+        // Error
+        return -1;
+    }
+    return id;
+}
+
 todo_id_t todo_reader_get_last_id(const char const *todomo_folder)
 {
-   return -1;
+    struct dirent **namelist;
+    int n = scandir(todomo_folder, &namelist, NULL, alphasort);
+    todo_id_t id = -1;
+    if (n < 0) 
+    {
+        perror("scandir");
+        return -1;
+    }
+    while (n--)
+    {
+        if (id == -1)
+        {
+            printf(namelist[n]->d_name);
+            id = _parse_id_from_filename(namelist[n]->d_name);
+        }
+        free(namelist[n]);
+    }
+    free(namelist);
+    return id;
 }
