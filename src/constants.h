@@ -18,6 +18,6 @@
 #define KWHT "\x1B[37m"
 
 static const char *TODOMO_FOLDER = ".todomo";
-static const char *TODOMO_FILE = "todomo.bin";
+static const char *TODOMO_DELIMITER = ",";
 
 #endif /* _CONSTANTS_H */

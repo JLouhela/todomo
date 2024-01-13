@@ -43,27 +43,36 @@ void tearDown()
     }
 }
 
-int create_file(const char* const file_path)
+int create_file(const char* const file_path, const char* str)
 {
-    FILE* file_ptr = fopen(file_path, "w");
-    if (!file_ptr)
+    FILE* fp = fopen(file_path, "w");
+    if (!fp)
     {
         perror("fopen");
         return -1;
     }
-    fclose(file_ptr);
+    fprintf(fp, "%s", str);
+    fclose(fp);
     return 0;
 }
 
-void setup_test_files(int count, int name_index)
+void setup_test_files_with_content(int count, int name_index, const char* text, todo_state_t state)
 {
     for (int i = 0; i < count; ++i, ++name_index)
     {
         char file_path[256];
         snprintf(file_path, sizeof(file_path), "%s/test_file_%d", TEST_TMP_DIR, name_index);
-        create_file(file_path);
+        char str[256];
+        snprintf(str, sizeof(str), "%s,%d", text, state);
+        create_file(file_path, str);
     } 
 }
+
+void setup_test_files(int count, int name_index)
+{
+    setup_test_files_with_content(count, name_index, "TEST TODO :D", TODO_STATE_DONE);
+}
+
 
 // TEST CASES 
 void test_read_count()
@@ -98,11 +107,43 @@ void test_last_id_fail()
     TEST_ASSERT_EQUAL(-1, last_id);
     char file_path[256];
     snprintf(file_path, sizeof(file_path), "%s/test_file", TEST_TMP_DIR);
-    create_file(file_path);
+    create_file(file_path, "asd");
     last_id = todo_reader_get_last_id(TEST_TMP_DIR);
     TEST_ASSERT_EQUAL(-1, last_id);
     last_id = todo_reader_get_last_id("asdasdasdasdasd12312easdiu1j4");
     TEST_ASSERT_EQUAL(-1, last_id);
+}
+
+void assert_equal_todo(Todo expected, todo_id_t id, todo_state_t state, const char* text)
+{
+    TEST_ASSERT_EQUAL(id, expected.id);
+    TEST_ASSERT_EQUAL(state, expected.state);
+    TEST_ASSERT_EQUAL_STRING(text, expected.text);
+}
+
+void test_read_todo_1()
+{
+    Todo output[1];
+    setup_test_files_with_content(5, 10, "blah blah", TODO_STATE_DONE);
+    int count = todo_reader_read_amount(1, TEST_TMP_DIR, output);    
+    TEST_ASSERT_EQUAL(1, count);
+    TEST_ASSERT_EQUAL(14, output->id);
+    TEST_ASSERT_EQUAL(TODO_STATE_DONE, output->state);
+    TEST_ASSERT_EQUAL_STRING("blah blah", output->text);
+
+    Todo output2[5];
+    setup_test_files_with_content(2, 100, "bleh bleh", TODO_STATE_WIP);
+    count = todo_reader_read_amount(5,  TEST_TMP_DIR, output2);
+    TEST_ASSERT_EQUAL(5, count);
+
+    // Sorting follows now alphasort in reverse order
+    // For more sophisticated approach, own scandir sorting needs to be implemented
+    // See https://stackoverflow.com/questions/37971949/scandir-own-filter-function for reference
+    assert_equal_todo(output2[0],14, TODO_STATE_DONE, "blah blah");
+    assert_equal_todo(output2[1],13, TODO_STATE_DONE, "blah blah");
+    assert_equal_todo(output2[2],12, TODO_STATE_DONE, "blah blah");
+    assert_equal_todo(output2[3],11, TODO_STATE_DONE, "blah blah");
+    assert_equal_todo(output2[4],101, TODO_STATE_WIP, "bleh bleh");
 }
 
 
@@ -116,6 +157,7 @@ int main(void)
     RUN_TEST(test_read_count_wrong_dir);
     RUN_TEST(test_last_id);
     RUN_TEST(test_last_id_fail);
+    RUN_TEST(test_read_todo_1);
 
     UNITY_END();
 
