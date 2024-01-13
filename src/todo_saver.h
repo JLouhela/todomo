@@ -7,6 +7,6 @@
 #include <stdbool.h>
 
 struct Todo;
-bool todo_save(const struct Todo *const todo, const char const *file_path);
+bool todo_saver_save_todo(const struct Todo *const todo, const char const *file_path);
 
 #endif /* _TODOSAVER_H */

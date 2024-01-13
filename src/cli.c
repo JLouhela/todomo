@@ -112,7 +112,7 @@ void _perform_add_operation(const char const *todomo_folder, const OpAddArgs *ad
     }
 
     const Todo t = create_todo(desc, last_id + 1, TODO_STATE_OPEN);
-    todo_save(&t, todomo_folder);
+    todo_saver_save_todo(&t, todomo_folder);
 }
 
 void _perform_list_operation(char const *todomo_folder, const OpListArgs *list_args)
