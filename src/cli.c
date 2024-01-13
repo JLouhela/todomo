@@ -9,7 +9,7 @@
 #include <dirent.h>
 
 #include "todo.h"
-#include "todo_saver.h"
+#include "todo_writer.h"
 #include "todo_reader.h"
 #include "todo_state.h"
 #include "constants.h"
@@ -112,7 +112,7 @@ void _perform_add_operation(const char const *todomo_folder, const OpAddArgs *ad
     }
 
     const Todo t = create_todo(desc, last_id + 1, TODO_STATE_OPEN);
-    todo_saver_save_todo(&t, todomo_folder);
+    todo_writer_save_todo(&t, todomo_folder);
 }
 
 void _perform_list_operation(char const *todomo_folder, const OpListArgs *list_args)
@@ -151,7 +151,8 @@ void _perform_init_operation(const OpInitArgs *init_args)
 {
     char file_path[PATH_MAX];
     strcpy(file_path, TODOMO_FOLDER);
-    if (mkdir(file_path, 0777) && errno != EEXIST)
+    // TODO check proper access rights
+    if (mkdir(file_path, 0755) && errno != EEXIST)
     {
         printf("error while trying to create todomo root folder (%s)\n", file_path);
         // TODO return error code

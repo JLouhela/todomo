@@ -13,7 +13,7 @@
 
 void setUp()
 {
-    int mkdir_res = mkdir(TEST_TMP_DIR, 0777);
+    int mkdir_res = mkdir(TEST_TMP_DIR, 0755);
     if (mkdir_res != 0)
     {
         perror("mkdir");

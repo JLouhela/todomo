@@ -33,7 +33,7 @@ OBJS = $(subst src/,, $(_OBJS))
 
 COMPILE=gcc -c
 LINK=gcc
-CFLAGS=-I. -I$(PATHU) -I$(PATHS) -DTEST
+CFLAGS=-I. -I$(PATHU) -I$(PATHS) 
 DEBUG_SYM = -g
 
 RESULTS = $(patsubst $(PATHT)Test%.c,$(PATHR)Test%.txt,$(SRCT))
