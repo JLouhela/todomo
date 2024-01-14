@@ -62,7 +62,17 @@ bool file_content_matches(const char* file_path, const char* file_content)
     char buffer[512];
     fgets(buffer, 512, fp);
     fclose(fp);
-    return strcmp(buffer, file_content) == 0;
+    int result = strcmp(buffer, file_content);
+    if (result == 0)
+    {
+        return true;
+    } else
+    {
+        printf("Failed file content match:\n");
+        printf("  Expected: %s\n", file_content);
+        printf("  Actual: %s\n", buffer);
+        return false;
+    }
 }
 
 // TEST CASES START
@@ -72,6 +82,7 @@ void test_write_files()
     Todo t;
     t.id = 5;
     t.state = 1;
+    strcpy(t.timestamp, "2020-01-01");
     strcpy(t.text, "Hello World");
     int res = todo_writer_save_todo(&t, TEST_TMP_DIR);
     TEST_ASSERT_EQUAL_INT(0, res);
@@ -81,8 +92,10 @@ void test_write_files()
     strcat(file_path, "/todo_000005"); 
 
     TEST_ASSERT_TRUE(file_exists(file_path));
+    TEST_ASSERT_TRUE(file_content_matches(file_path, "2020-01-01,Hello World,1"));
     t.id = 666;
     t.state = 2;
+    strcpy(t.timestamp, "whatever");
     strcpy(t.text, "Remember to greet the world");
     res = todo_writer_save_todo(&t, TEST_TMP_DIR);
     TEST_ASSERT_EQUAL_INT(0, res);
@@ -91,7 +104,18 @@ void test_write_files()
     strcpy(file_path, TEST_TMP_DIR);
     strcat(file_path, "/todo_000666");
     TEST_ASSERT_TRUE(file_exists(file_path));
+    TEST_ASSERT_TRUE(file_content_matches(file_path, "whatever,Remember to greet the world,2"));
 
+}
+
+void test_write_files_no_dir()
+{
+    Todo t;
+    t.id = 5;
+    t.state = 1;
+    strcpy(t.text, "Hello World");
+    int res = todo_writer_save_todo(&t, "asdasdasdasdasdaser33108u3");
+    TEST_ASSERT_EQUAL_INT(TS_CANNOT_OPEN_FILE, res);
 }
 
 // TEST CASES END
@@ -101,6 +125,7 @@ int main(void)
 {
     UNITY_BEGIN();
     RUN_TEST(test_write_files);
+    RUN_TEST(test_write_files_no_dir);
     UNITY_END();
 
     return 0;

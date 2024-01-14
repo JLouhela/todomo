@@ -22,6 +22,7 @@ int todo_writer_save_todo(const struct Todo *const todo, const char const *todom
         return TS_CANNOT_OPEN_FILE;
     }
     // Write todo to file
-    fprintf(dst, "%s,%d", todo->text, todo->state);
+    fprintf(dst, "%s,%s,%d", todo->timestamp, todo->text, todo->state);
+    fclose(dst);
     return 0;
 }

@@ -14,6 +14,7 @@ typedef struct Todo
     todo_id_t id;
     char text[TODO_LEN];
     todo_state_t state;
+    char timestamp[64];
 } Todo;
 
 Todo create_todo(const char *text, todo_id_t id, todo_state_t state);

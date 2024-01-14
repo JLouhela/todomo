@@ -27,8 +27,6 @@ enum export_type
     export_md = 0
 };
 
-// TODO define payloads for operations = structs
-// deliver as void* to handle_op
 typedef struct OpAddArgs
 {
     char description[TODO_LEN];
