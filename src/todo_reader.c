@@ -145,7 +145,7 @@ todo_id_t todo_reader_get_last_id(const char const *todomo_folder)
     if (n < 0) 
     {
         perror("scandir");
-        return -1;
+        return TR_CANNOT_OPEN_FOLDER;
     }
     while (n--)
     {
@@ -156,5 +156,9 @@ todo_id_t todo_reader_get_last_id(const char const *todomo_folder)
         free(namelist[n]);
     }
     free(namelist);
+    if (id == -1)
+    {
+        return TR_NO_TODOS_IN_FOLDER;
+    }
     return id;
 }

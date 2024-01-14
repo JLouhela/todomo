@@ -89,6 +89,7 @@ void perform_operation(const enum operation op, const char *todomo_folder, const
     {
         OpExportArgs *export_args = (OpExportArgs *)op_args;
         _perform_export_operation(todomo_folder, export_args);
+        free(export_args);
         break;
     }
     default:
@@ -104,11 +105,15 @@ void _perform_add_operation(const char const *todomo_folder, const OpAddArgs *ad
     char desc[TODO_LEN];
     strncpy(desc, add_args->description, TODO_LEN);
 
-    const todo_id_t last_id = todo_reader_get_last_id(todomo_folder);
-    if (last_id < 0)
+    todo_id_t last_id = todo_reader_get_last_id(todomo_folder);
+    if (last_id == TR_CANNOT_OPEN_FOLDER)
     {
-        fprintf(stderr, "Failed to perform add op: could not read last id");
+        fprintf(stderr, "Failed to perform add op: folder deos not exist");
         return;
+    } 
+    else if (last_id == TR_NO_TODOS_IN_FOLDER)
+    {
+        last_id = 0;
     }
 
     const Todo t = create_todo(desc, last_id + 1, TODO_STATE_OPEN);
@@ -155,7 +160,7 @@ void _perform_init_operation(const OpInitArgs *init_args)
     if (mkdir(file_path, 0755) && errno != EEXIST)
     {
         printf("error while trying to create todomo root folder (%s)\n", file_path);
-        // TODO return error code
+        perror("mkdir");
         return;
     }
     printf("Initialized new todomo repository\n");
@@ -191,7 +196,6 @@ void *get_op_args(enum operation op, char *argv[], int arg_start, int argc)
     return NULL;
 }
 
-// TODO why ptr?
 OpAddArgs *_get_op_add_args(char *argv[], int arg_start, int argc)
 {
     OpAddArgs *output = (OpAddArgs *)malloc(sizeof(OpAddArgs));

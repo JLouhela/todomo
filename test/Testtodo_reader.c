@@ -104,14 +104,14 @@ void test_last_id()
 void test_last_id_fail()
 {
     todo_id_t last_id = todo_reader_get_last_id(TEST_TMP_DIR);
-    TEST_ASSERT_EQUAL(-1, last_id);
+    TEST_ASSERT_EQUAL(TR_NO_TODOS_IN_FOLDER, last_id);
     char file_path[256];
     snprintf(file_path, sizeof(file_path), "%s/test_file", TEST_TMP_DIR);
     create_file(file_path, "asd");
     last_id = todo_reader_get_last_id(TEST_TMP_DIR);
-    TEST_ASSERT_EQUAL(-1, last_id);
+    TEST_ASSERT_EQUAL(TR_NO_TODOS_IN_FOLDER, last_id);
     last_id = todo_reader_get_last_id("asdasdasdasdasd12312easdiu1j4");
-    TEST_ASSERT_EQUAL(-1, last_id);
+    TEST_ASSERT_EQUAL(TR_CANNOT_OPEN_FOLDER, last_id);
 }
 
 void assert_equal_todo(Todo expected, todo_id_t id, todo_state_t state, const char* text)

@@ -8,7 +8,7 @@ int todo_writer_save_todo(const struct Todo *const todo, const char const *todom
 {
     // Create file path from todo id
     char file_path[512];
-    if (strlen(todomo_folder_path) + 6 > file_path)
+    if (strlen(todomo_folder_path) + 6 > sizeof(file_path))
     {
         fprintf(stderr, "Failed to save todo: todomo folder path too long\n");
         return TS_FILE_PATH_TOO_LONG;
@@ -23,6 +23,5 @@ int todo_writer_save_todo(const struct Todo *const todo, const char const *todom
     }
     // Write todo to file
     fprintf(dst, "%s,%d", todo->text, todo->state);
-    fclose(file_path);
     return 0;
 }
