@@ -66,7 +66,8 @@ bool file_content_matches(const char* file_path, const char* file_content)
     if (result == 0)
     {
         return true;
-    } else
+    } 
+    else
     {
         printf("Failed file content match:\n");
         printf("  Expected: %s\n", file_content);
@@ -82,7 +83,7 @@ void test_write_files()
     Todo t;
     t.id = 5;
     t.state = 1;
-    strcpy(t.timestamp, "2020-01-01");
+    t.timestamp = 1234545;
     strcpy(t.text, "Hello World");
     int res = todo_writer_save_todo(&t, TEST_TMP_DIR);
     TEST_ASSERT_EQUAL_INT(0, res);
@@ -92,10 +93,10 @@ void test_write_files()
     strcat(file_path, "/todo_000005"); 
 
     TEST_ASSERT_TRUE(file_exists(file_path));
-    TEST_ASSERT_TRUE(file_content_matches(file_path, "2020-01-01,Hello World,1"));
+    TEST_ASSERT_TRUE(file_content_matches(file_path, "1234545,Hello World,1"));
     t.id = 666;
     t.state = 2;
-    strcpy(t.timestamp, "whatever");
+    t.timestamp = 0;
     strcpy(t.text, "Remember to greet the world");
     res = todo_writer_save_todo(&t, TEST_TMP_DIR);
     TEST_ASSERT_EQUAL_INT(0, res);
@@ -104,7 +105,7 @@ void test_write_files()
     strcpy(file_path, TEST_TMP_DIR);
     strcat(file_path, "/todo_000666");
     TEST_ASSERT_TRUE(file_exists(file_path));
-    TEST_ASSERT_TRUE(file_content_matches(file_path, "whatever,Remember to greet the world,2"));
+    TEST_ASSERT_TRUE(file_content_matches(file_path, "0,Remember to greet the world,2"));
 
 }
 

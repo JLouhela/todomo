@@ -8,15 +8,16 @@
 #include <stdint.h>
 
 typedef int32_t todo_id_t;
+typedef uint32_t todo_timestamp_t;
 
 typedef struct Todo
 {
     todo_id_t id;
     char text[TODO_LEN];
     todo_state_t state;
-    char timestamp[64];
+    unsigned long timestamp;    
 } Todo;
 
-Todo create_todo(const char *text, todo_id_t id, todo_state_t state);
+Todo create_todo(todo_timestamp_t timestamp, const char *text, todo_id_t id, todo_state_t state);
 
 #endif /* _TODO_H */

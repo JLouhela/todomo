@@ -7,6 +7,7 @@
 #include <sys/stat.h>
 #include <errno.h>
 #include <dirent.h>
+#include <time.h>
 
 #include "todo.h"
 #include "todo_writer.h"
@@ -115,8 +116,8 @@ void _perform_add_operation(const char const *todomo_folder, const OpAddArgs *ad
     {
         last_id = 0;
     }
-
-    const Todo t = create_todo(desc, last_id + 1, TODO_STATE_OPEN);
+    todo_timestamp_t timestamp = (todo_timestamp_t)time(NULL);
+    const Todo t = create_todo(timestamp, desc, last_id + 1, TODO_STATE_OPEN);
     todo_writer_save_todo(&t, todomo_folder);
 }
 
