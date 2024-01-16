@@ -144,7 +144,10 @@ void _perform_list_operation(char const *todomo_folder, const OpListArgs *list_a
         Todo *t = &todos[i];
         char state_str[TODO_STATE_BUFFER_LEN];
         todo_state_to_string(t->state, state_str);
-        printf("TODO: %d-%s-%s\n", t->id, state_str, t->text);
+        char timestamp_str[26];
+        ctime_r(&t->timestamp, timestamp_str);
+        timestamp_str[strlen(timestamp_str) - 1] = '\0';
+        printf("TODO %d: %s. %s, created %s\n", t->id, t->text, state_str, timestamp_str);
     }
 }
 

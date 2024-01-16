@@ -9,26 +9,33 @@
 bool _read_todo_content_from_file(Todo *t, const char const *file_name);
 todo_id_t _parse_id_from_filename(const char const* file_name);
 void _parse_todo_from_content(Todo* t, const char const* todo_content);
-void _parse_status_from_content(Todo* t, const char const* todo_content);
 
 void _parse_todo_from_content(Todo* t, const char const* todo_content)
 {
-    //Find the last comma in the string
-    char* last_comma = strrchr(todo_content, ',');
-    strncpy(t->text, todo_content, last_comma - todo_content);
-    t->text[last_comma - todo_content] = '\0';
+    // Split todo_content with strtok by ','
+    char* token = strtok((char*)todo_content, ",");
+    int i = 0;
+    while (token != NULL)
+    {
+        switch (i)
+        {
+            case TSO_TIMESTAMP:
+                t->timestamp = strtoul(token, NULL, 10);
+                break;
+            case TSO_TEXT:
+                strncpy(t->text, token, TODO_LEN);
+                break;
+            case TSO_STATE:
+                t->state = atoi(token);
+                break;
+            default:
+                break;
+        }
+        token = strtok(NULL, ",");
+        i++;
+    } 
 }
 
-void _parse_status_from_content(Todo* t, const char const* todo_content)
-{
-    // Find the last comma in the string
-    const char* last_comma = strrchr(todo_content, ',');
-    const char* first_digit = last_comma + 1;
-    // Convert the digit to an integer
-    int state = atoi(first_digit);
-    // Set the state of the todo
-    t->state = state;
-}
 
 bool _read_todo_content_from_file(Todo *t, const char const *file_name)
 {
@@ -43,7 +50,6 @@ bool _read_todo_content_from_file(Todo *t, const char const *file_name)
     char buffer[TODO_LEN];
     while (fgets(buffer, TODO_LEN, fp));
 
-    _parse_status_from_content(t, buffer);
     _parse_todo_from_content(t, buffer);
 
     return true;

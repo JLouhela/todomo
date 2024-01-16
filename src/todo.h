@@ -10,6 +10,13 @@
 typedef int32_t todo_id_t;
 typedef uint32_t todo_timestamp_t;
 
+enum SerializationOrder
+{
+    TSO_TIMESTAMP = 0,
+    TSO_TEXT = 1,
+    TSO_STATE = 2,
+};
+
 typedef struct Todo
 {
     todo_id_t id;
