@@ -53,3 +53,6 @@ dkms.conf
 
 # Build dir
 build/
+
+# todo dir until solution is working
+todo
