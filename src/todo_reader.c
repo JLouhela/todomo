@@ -7,35 +7,37 @@
 #include <ctype.h>
 
 bool _read_todo_content_from_file(Todo *t, const char const *file_name);
-todo_id_t _parse_id_from_filename(const char const* file_name);
-void _parse_todo_from_content(Todo* t, const char const* todo_content);
+todo_id_t _parse_id_from_filename(const char const *file_name);
+void _parse_todo_from_content(Todo *t, const char const *todo_content);
 
-void _parse_todo_from_content(Todo* t, const char const* todo_content)
+void _parse_todo_from_content(Todo *t, const char const *todo_content)
 {
     // Split todo_content with strtok by ','
-    char* token = strtok((char*)todo_content, ",");
+    char *token = strtok((char *)todo_content, ",");
     int i = 0;
     while (token != NULL)
     {
         switch (i)
         {
-            case TSO_TIMESTAMP:
-                t->timestamp = strtoul(token, NULL, 10);
-                break;
-            case TSO_TEXT:
-                strncpy(t->text, token, TODO_LEN);
-                break;
-            case TSO_STATE:
-                t->state = atoi(token);
-                break;
-            default:
-                break;
+        case TSO_TIMESTAMP:
+            t->timestamp = strtoul(token, NULL, 10);
+            break;
+        case TSO_TEXT:
+            strncpy(t->text, token, TODO_LEN);
+            break;
+        case TSO_STATE:
+            t->state = atoi(token);
+            break;
+        case TSO_USER_NAME:
+            strncpy(t->user_name, token, USER_NAME_LEN);
+            break;
+        default:
+            break;
         }
         token = strtok(NULL, ",");
         i++;
-    } 
+    }
 }
-
 
 bool _read_todo_content_from_file(Todo *t, const char const *file_name)
 {
@@ -48,7 +50,9 @@ bool _read_todo_content_from_file(Todo *t, const char const *file_name)
     }
 
     char buffer[TODO_LEN];
-    while (fgets(buffer, TODO_LEN, fp));
+    while (fgets(buffer, TODO_LEN, fp))
+    {
+    }
 
     _parse_todo_from_content(t, buffer);
 
@@ -60,7 +64,7 @@ int todo_reader_read_amount(int amount, const char const *todomo_folder, Todo *t
     struct dirent **namelist;
     int n = scandir(todomo_folder, &namelist, NULL, alphasort);
     int read_amount = 0;
-    if (n < 0) 
+    if (n < 0)
     {
         perror("scandir");
         return -1;
@@ -71,8 +75,8 @@ int todo_reader_read_amount(int amount, const char const *todomo_folder, Todo *t
         {
             if (namelist[n]->d_name[0] != '.')
             {
-               todo_id_t id = _parse_id_from_filename(namelist[n]->d_name);
-                Todo* todo = &todos[read_amount];
+                todo_id_t id = _parse_id_from_filename(namelist[n]->d_name);
+                Todo *todo = &todos[read_amount];
                 todo->id = id;
                 // Get full filepath from namelist[n]
                 char file_path[512];
@@ -82,7 +86,8 @@ int todo_reader_read_amount(int amount, const char const *todomo_folder, Todo *t
                     continue;
                 }
                 snprintf(file_path, sizeof(file_path), "%s/%s", todomo_folder, namelist[n]->d_name);
-                if (_read_todo_content_from_file(todo, file_path)) {
+                if (_read_todo_content_from_file(todo, file_path))
+                {
                     read_amount++;
                 }
             }
@@ -95,9 +100,9 @@ int todo_reader_read_amount(int amount, const char const *todomo_folder, Todo *t
 
 int todo_reader_count(const char const *todomo_folder)
 {
-    DIR* dir = NULL;
-    dir = opendir(todomo_folder); 
-    if (!dir) 
+    DIR *dir = NULL;
+    dir = opendir(todomo_folder);
+    if (!dir)
     {
         fprintf(stderr, "Failed to open todomo directory %s\n", todomo_folder);
         return -1;
@@ -108,18 +113,18 @@ int todo_reader_count(const char const *todomo_folder)
     while (entry != NULL)
     {
         if (entry->d_type == DT_REG)
-        { 
+        {
             // DT_REG = regular file
             count++;
         }
         entry = readdir(dir);
     }
-    
+
     closedir(dir);
     return count;
 }
 
-todo_id_t _parse_id_from_filename(const char const* file_name)
+todo_id_t _parse_id_from_filename(const char const *file_name)
 {
     todo_id_t id = 0;
     int multiplier = 1;
@@ -135,7 +140,7 @@ todo_id_t _parse_id_from_filename(const char const* file_name)
             break;
         }
     }
-    if (id == 0) 
+    if (id == 0)
     {
         // Error
         return -1;
@@ -148,7 +153,7 @@ todo_id_t todo_reader_get_last_id(const char const *todomo_folder)
     struct dirent **namelist;
     int n = scandir(todomo_folder, &namelist, NULL, alphasort);
     todo_id_t id = -1;
-    if (n < 0) 
+    if (n < 0)
     {
         perror("scandir");
         return TR_CANNOT_OPEN_FOLDER;

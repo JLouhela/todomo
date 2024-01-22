@@ -6,6 +6,7 @@
 #define _CONSTANTS_H
 
 #define TODO_LEN 1024
+#define USER_NAME_LEN 64
 #define TIMESTAMP_LEN 64
 #define DEFAULT_LIST_COUNT INT_MAX
 

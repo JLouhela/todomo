@@ -12,10 +12,11 @@
 #include "todo.h"
 #include "todo_writer.h"
 #include "todo_reader.h"
+#include "git_utils.h"
 #include "todo_state.h"
 #include "constants.h"
 
-void _perform_add_operation(char const *file_path, const OpAddArgs *add_args);
+void _perform_add_operation(char const *file_path, const OpAddArgs *add_args, const char const *user_name);
 void _perform_list_operation(char const *file_path, const OpListArgs *list_args);
 void _perform_init_operation(const OpInitArgs *init_args);
 void _perform_export_operation(char const *file_path, const OpExportArgs *export_args);
@@ -70,8 +71,10 @@ void perform_operation(const enum operation op, const char *todomo_folder, const
     case op_add:
     {
         OpAddArgs *add_args = (OpAddArgs *)op_args;
-        _perform_add_operation(todomo_folder, add_args);
+        char *user_name = git_utils_get_user_name();
+        _perform_add_operation(todomo_folder, add_args, user_name);
         free(add_args);
+        free(user_name);
         break;
     }
     case op_init:
@@ -101,7 +104,7 @@ void perform_operation(const enum operation op, const char *todomo_folder, const
     }
 }
 
-void _perform_add_operation(const char const *todomo_folder, const OpAddArgs *add_args)
+void _perform_add_operation(const char const *todomo_folder, const OpAddArgs *add_args, const char const *user_name)
 {
     char desc[TODO_LEN];
     strncpy(desc, add_args->description, TODO_LEN);
@@ -111,13 +114,13 @@ void _perform_add_operation(const char const *todomo_folder, const OpAddArgs *ad
     {
         fprintf(stderr, "Failed to perform add op: folder deos not exist");
         return;
-    } 
+    }
     else if (last_id == TR_NO_TODOS_IN_FOLDER)
     {
         last_id = 0;
     }
     todo_timestamp_t timestamp = (todo_timestamp_t)time(NULL);
-    const Todo t = create_todo(timestamp, desc, last_id + 1, TODO_STATE_OPEN);
+    const Todo t = create_todo(timestamp, desc, last_id + 1, TODO_STATE_OPEN, user_name);
     todo_writer_save_todo(&t, todomo_folder);
 }
 
@@ -147,7 +150,7 @@ void _perform_list_operation(char const *todomo_folder, const OpListArgs *list_a
         char timestamp_str[26];
         ctime_r(&t->timestamp, timestamp_str);
         timestamp_str[strlen(timestamp_str) - 1] = '\0';
-        printf("TODO %d: %s. %s, created %s\n", t->id, t->text, state_str, timestamp_str);
+        printf("TODO [%s] %d: %s. %s, created %s\n", t->user_name, t->id, t->text, state_str, timestamp_str);
     }
 }
 
